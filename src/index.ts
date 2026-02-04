@@ -46,15 +46,19 @@ const plugin = {
         required: ["question"],
       },
       execute: async (_toolCallId: string, args: any) => {
+        api.logger?.info(`[dingtalk_ask] called with args: ${JSON.stringify(args)}`);
         const question =
-          typeof args.question === "string" ? args.question.trim() : "";
+          typeof args?.question === "string" ? args.question.trim() : "";
         if (!question) {
-          return jsonResult({ error: "question parameter is required" });
+          api.logger?.error(`[dingtalk_ask] empty question, args type: ${typeof args}`);
+          return jsonResult({ error: "question parameter is required", receivedArgs: args });
         }
 
         try {
+          api.logger?.info(`[dingtalk_ask] querying: ${question.substring(0, 50)}...`);
           const result = await client.query(question);
           sessions.set("current", result.conversationId);
+          api.logger?.info(`[dingtalk_ask] success, conversationId: ${result.conversationId}, answer length: ${result.answer.length}`);
 
           return jsonResult({
             conversationId: result.conversationId,
@@ -63,6 +67,7 @@ const plugin = {
             hint: "Use dingtalk_followup with the conversationId to ask follow-up questions.",
           });
         } catch (err: any) {
+          api.logger?.error(`[dingtalk_ask] error: ${err.message}`);
           return jsonResult({ error: err.message });
         }
       },
