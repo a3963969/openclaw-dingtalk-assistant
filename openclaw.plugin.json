@@ -1,0 +1,28 @@
+{
+  "id": "dingtalk-assistant",
+  "name": "DingTalk Developer Assistant",
+  "description": "Query the DingTalk Open Platform AI Developer Assistant for API documentation and development guidance.",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "default": "https://open.dingtalk.com"
+      },
+      "sseBaseUrl": {
+        "type": "string",
+        "default": "https://power.dingtalk.com"
+      }
+    }
+  },
+  "uiHints": {
+    "baseUrl": {
+      "label": "DingTalk API Base URL",
+      "placeholder": "https://open.dingtalk.com"
+    },
+    "sseBaseUrl": {
+      "label": "DingTalk SSE Base URL",
+      "placeholder": "https://power.dingtalk.com"
+    }
+  }
+}
