@@ -11,6 +11,13 @@ import { DingTalkAssistantClient } from "./dingtalk-client.js";
 // Track active conversations per agent session
 const sessions = new Map<string, string>();
 
+function jsonResult(payload: any) {
+  return {
+    content: [{ type: "text" as const, text: JSON.stringify(payload, null, 2) }],
+    details: payload,
+  };
+}
+
 const plugin = {
   id: "dingtalk-assistant",
   name: "DingTalk Developer Assistant",
@@ -26,7 +33,7 @@ const plugin = {
     api.registerTool({
       name: "dingtalk_ask",
       description:
-        "Ask the DingTalk Open Platform Developer Assistant a question about DingTalk APIs, SDKs, development guides, or best practices. Creates a new conversation and returns the answer with suggested follow-up questions.",
+        "Ask the DingTalk Open Platform Developer Assistant a question about DingTalk APIs, SDKs, development guides, or best practices. Creates a new conversation and returns the answer with suggested follow-up questions. Use this tool whenever users ask about DingTalk development.",
       parameters: {
         type: "object",
         properties: {
@@ -38,19 +45,25 @@ const plugin = {
         },
         required: ["question"],
       },
-      handler: async ({ question }: { question: string }) => {
+      execute: async (_toolCallId: string, args: any) => {
+        const question =
+          typeof args.question === "string" ? args.question.trim() : "";
+        if (!question) {
+          return jsonResult({ error: "question parameter is required" });
+        }
+
         try {
           const result = await client.query(question);
           sessions.set("current", result.conversationId);
 
-          return {
+          return jsonResult({
             conversationId: result.conversationId,
             answer: result.answer,
             followUpQuestions: result.followUpQuestions,
             hint: "Use dingtalk_followup with the conversationId to ask follow-up questions.",
-          };
+          });
         } catch (err: any) {
-          return { error: err.message };
+          return jsonResult({ error: err.message });
         }
       },
     });
@@ -75,30 +88,30 @@ const plugin = {
         },
         required: ["question"],
       },
-      handler: async ({
-        conversationId,
-        question,
-      }: {
-        conversationId?: string;
-        question: string;
-      }) => {
-        const id = conversationId ?? sessions.get("current");
-        if (!id) {
-          return {
+      execute: async (_toolCallId: string, args: any) => {
+        const question =
+          typeof args.question === "string" ? args.question.trim() : "";
+        const conversationId =
+          typeof args.conversationId === "string"
+            ? args.conversationId.trim()
+            : sessions.get("current");
+
+        if (!conversationId) {
+          return jsonResult({
             error:
               "No active conversation. Use dingtalk_ask first to start a conversation.",
-          };
+          });
         }
 
         try {
-          const result = await client.followUp(id, question);
-          return {
-            conversationId: id,
+          const result = await client.followUp(conversationId, question);
+          return jsonResult({
+            conversationId,
             answer: result.answer,
             followUpQuestions: result.followUpQuestions,
-          };
+          });
         } catch (err: any) {
-          return { error: err.message };
+          return jsonResult({ error: err.message });
         }
       },
     });
@@ -118,31 +131,31 @@ const plugin = {
           },
         },
       },
-      handler: async ({
-        conversationId,
-      }: {
-        conversationId?: string;
-      }) => {
-        const id = conversationId ?? sessions.get("current");
-        if (!id) {
-          return {
+      execute: async (_toolCallId: string, args: any) => {
+        const conversationId =
+          typeof args.conversationId === "string"
+            ? args.conversationId.trim()
+            : sessions.get("current");
+
+        if (!conversationId) {
+          return jsonResult({
             error:
               "No active conversation. Use dingtalk_ask first to start a conversation.",
-          };
+          });
         }
 
         try {
-          const history = await client.getHistory(id);
-          return {
-            conversationId: id,
+          const history = await client.getHistory(conversationId);
+          return jsonResult({
+            conversationId,
             dialog: history.dialog.map((d) => ({
               question: d.question,
               answer: d.answer.answer,
               time: d.createTime,
             })),
-          };
+          });
         } catch (err: any) {
-          return { error: err.message };
+          return jsonResult({ error: err.message });
         }
       },
     });
@@ -163,12 +176,18 @@ const plugin = {
         },
         required: ["pageUrl"],
       },
-      handler: async ({ pageUrl }: { pageUrl: string }) => {
+      execute: async (_toolCallId: string, args: any) => {
+        const pageUrl =
+          typeof args.pageUrl === "string" ? args.pageUrl.trim() : "";
+        if (!pageUrl) {
+          return jsonResult({ error: "pageUrl parameter is required" });
+        }
+
         try {
           const questions = await client.getRecommendedQuestions(pageUrl);
-          return { recommendedQuestions: questions };
+          return jsonResult({ recommendedQuestions: questions });
         } catch (err: any) {
-          return { error: err.message };
+          return jsonResult({ error: err.message });
         }
       },
     });
@@ -194,7 +213,7 @@ const plugin = {
           let text = result.answer;
           if (result.followUpQuestions.length > 0) {
             text += "\n\n---\n**Suggested follow-ups:**\n";
-            result.followUpQuestions.forEach((q, i) => {
+            result.followUpQuestions.forEach((q: string, i: number) => {
               text += `${i + 1}. ${q}\n`;
             });
           }
