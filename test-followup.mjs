@@ -2,7 +2,7 @@
  * Test follow-up conversation flow
  */
 const BASE_URL = "https://open.dingtalk.com";
-const SSE_BASE_URL = "https://power.dingtalk.com";
+const SSE_BASE_URL = "https://open.dingtalk.com";
 
 async function main() {
   // Step 1: Create conversation with initial question

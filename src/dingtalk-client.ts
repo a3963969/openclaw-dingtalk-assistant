@@ -41,7 +41,7 @@ export interface SSEMessage {
 
 const DEFAULT_CONFIG: DingTalkConfig = {
   baseUrl: "https://open.dingtalk.com",
-  sseBaseUrl: "https://power.dingtalk.com",
+  sseBaseUrl: "https://open.dingtalk.com",
 };
 
 export class DingTalkAssistantClient {

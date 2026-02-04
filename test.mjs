@@ -4,7 +4,7 @@
  */
 
 const BASE_URL = "https://open.dingtalk.com";
-const SSE_BASE_URL = "https://power.dingtalk.com";
+const SSE_BASE_URL = "https://open.dingtalk.com";
 
 // ── Step 1: Create conversation ─────────────────────────────────
 async function createConversation(query) {

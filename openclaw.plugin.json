@@ -11,7 +11,7 @@
       },
       "sseBaseUrl": {
         "type": "string",
-        "default": "https://power.dingtalk.com"
+        "default": "https://open.dingtalk.com"
       }
     }
   },
@@ -22,7 +22,7 @@
     },
     "sseBaseUrl": {
       "label": "DingTalk SSE Base URL",
-      "placeholder": "https://power.dingtalk.com"
+      "placeholder": "https://open.dingtalk.com"
     }
   }
 }
