@@ -23,10 +23,10 @@ const plugin = {
   name: "DingTalk Developer Assistant",
 
   register(api: any) {
-    const config = api.config ?? {};
+    const pluginCfg = api.pluginConfig ?? {};
     const client = new DingTalkAssistantClient({
-      baseUrl: config.baseUrl,
-      sseBaseUrl: config.sseBaseUrl,
+      ...(pluginCfg.baseUrl ? { baseUrl: pluginCfg.baseUrl } : {}),
+      ...(pluginCfg.sseBaseUrl ? { sseBaseUrl: pluginCfg.sseBaseUrl } : {}),
     });
 
     // ── Tool 1: Ask a new question ──────────────────────────────
